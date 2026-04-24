@@ -1,0 +1,38 @@
+\subsubsection{Distribution stationnaire}
+
+La distribution stationnaire d'une chaîne de Markov, 
+notée $\pi_\infty$, est une distribution de probabilité qui 
+reste invariante lors de l'application de la matrice de transition $P$. 
+Mathématiquement, elle satisfait le système d'équations suivant :
+\begin{equation}
+    \pi_\infty P = \pi_\infty \quad \text{soumis à la contrainte} \quad \sum_{i \in \mathcal{S}} (\pi_\infty)_i = 1
+\end{equation}
+
+D'un point de vue algébrique, cela signifie que $\pi_\infty$ est le vecteur 
+propre à gauche de la matrice $P$ associé à la valeur propre $\lambda = 1$.
+
+Plutôt que d'estimer cette distribution en élevant $P$ à une grande puissance 
+(comme fait précédemment), nous l'avons calculée analytiquement en procédant 
+à la décomposition spectrale de la transposée de la matrice $P$ ($P^T$).
+
+Après extraction du vecteur propre correspondant à la valeur 
+propre $\lambda = 1$ et normalisation pour que la somme de ses éléments vaille 1, 
+nous obtenons la distribution stationnaire suivante :
+\begin{equation}
+    \pi_\infty = 
+    \begin{pmatrix}
+        \pi_A \\ \pi_C \\ \pi_G \\ \pi_T
+    \end{pmatrix}^T
+    = 
+    \begin{pmatrix}
+        0.2881 \\ 0.3497 \\ 0.2091 \\ 0.1531 
+    \end{pmatrix}^T
+\end{equation}
+
+\subparagraph{Conclusion sur la convergence}
+Nous constatons que ce calcul analytique direct corrobore parfaitement 
+l'observation empirique de la question précédente (1.1.2). Les valeurs de $\pi_\infty$ 
+correspondent exactement aux probabilités vers lesquelles les lignes de la matrice $P^{50}$ 
+avaient convergé. La chaîne de Markov modélisant notre séquence d'ADN possède donc 
+bien une unique distribution stationnaire vers laquelle le système tend asymptotiquement, 
+quelle que soit sa condition initiale.

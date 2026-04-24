@@ -1,0 +1,104 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- PACKAGES DE BASE ---
+\usepackage[utf8]{inputenc}    % Encodage des caractères
+\usepackage[T1]{fontenc}       % Encodage de la police
+\usepackage[french]{babel}     % Support du français
+\usepackage{geometry}          % Gestion des marges
+\geometry{hmargin=2.5cm, vmargin=3cm}
+
+% --- MATHÉMATIQUES ---
+\usepackage{amsmath, amsfonts, amssymb, amsthm} % Packages mathématiques standards
+\usepackage{bm}                % Pour les caractères mathématiques en gras
+
+% --- IMAGES ET COULEURS ---
+\usepackage{graphicx}          % Pour inclure des images
+\usepackage[dvipsnames]{xcolor} % Pour les couleurs
+\usepackage{caption}           % Pour personnaliser les légendes
+\usepackage{subcaption}        % Pour les sous-figures
+\usepackage{tikz}
+
+% --- CODE (Python) ---
+\usepackage{listings}          % Pour insérer votre code source
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{OliveGreen},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black}
+}
+
+% --- LIENS HYPERTEXTES (à charger en dernier) ---
+\usepackage[hidelinks]{hyperref}
+
+% --- MACROS PERSONNALISÉES ---
+\newcommand{\E}{\mathbb{E}}    % Espérance
+\newcommand{\Prob}{\mathbb{P}} % Probabilité
+\newcommand{\R}{\mathbb{R}}    % Réels
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+% --- INFORMATIONS DU RAPPORT ---
+\title{Projet de Processus Stochastiques \\ \Large Détection de motifs par méthodes MCMC}
+\author{Franck Duval HEUBA - S227629}
+\date{Année Académique 2025-2026}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+% ---------------------------------------------------------
+% PREMIÈRE PARTIE
+% ---------------------------------------------------------
+\section{Chaînes de Markov et échantillonnage de Gibbs}
+
+\subsection{Chaînes de Markov}
+
+\input{sections/question.111.tex}
+
+\input{sections/question.112.tex}
+
+\input{sections/question.113.tex}
+
+\input{sections/question.114.tex}
+
+\input{sections/question.115.tex}
+
+
+\newpage
+\subsection{Échantillonnage de Gibbs}
+
+\input{sections/question.121.tex}
+
+\input{sections/question.122.tex}
+
+\newpage
+\section{Détection de motifs}
+
+\subsection{Dérivations mathématiques}
+
+\newpage
+\subsection{Implémentation et expérimentations}
+
+\newpage
+\section{Conclusion}
+
+% --- ANNEXE : CODE ---
+\newpage
+\appendix
+\section{Code source}
+\begin{lstlisting}
+# Exemple de fonction Python
+def estimation_P(sequence):
+    # Votre code ici
+    pass
+\end{lstlisting}
+
+\end{document}

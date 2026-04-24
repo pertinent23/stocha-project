@@ -1,0 +1,71 @@
+\subsubsection{Évaluation de séquences}
+
+\paragraph{ }
+\subparagraph{Comparaison des fréquences empiriques}
+Avant d'évaluer les séquences avec notre modèle de Markov, 
+nous avons calculé la fréquence d'apparition simple (modèle d'ordre 0) de chaque 
+nucléotide pour les trois séquences fournies :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|c|c|c|}
+    \hline
+    \textbf{Séquence} & \textbf{Fréq. A} & \textbf{Fréq. C} & \textbf{Fréq. G} & \textbf{Fréq. T} \\
+    \hline
+    Séquence 1 & 0.2885 & 0.3495 & 0.2090 & 0.1530 \\ 
+    Séquence 2 & 0.3060 & 0.3415 & 0.1970 & 0.1555 \\ 
+    Séquence 3 & 0.2845 & 0.3605 & 0.1985 & 0.1565 \\ 
+    \hline
+\end{tabular}
+\end{center}
+
+L'analyse de ce tableau révèle que:  
+\textit{Seq1, Seq2 et Seq3 ont des distributions très similaires.}
+
+\subparagraph{Évaluation par le modèle de Markov}
+Afin d'évaluer plus finement dans quelle mesure ces séquences sont compatibles avec 
+la dynamique de \texttt{seq1}, nous calculons la probabilité d'observer chacune d'entre 
+elles sous l'hypothèse qu'elles ont été générées par notre chaîne de Markov.
+
+La vraisemblance d'une séquence $S = (x_1, x_2, \dots, x_L)$ s'écrit :
+\begin{equation}
+    \Prob(S \mid P) = \pi_\infty(x_1) \prod_{t=1}^{L-1} P_{x_t, x_{t+1}}
+\end{equation}
+
+Pour éviter l'underflow numérique dû au produit de milliers de probabilités, 
+nous utilisons la log-vraisemblance moyenne par nucléotide :
+\begin{equation}
+    \frac{1}{L} \log \Prob(S \mid P) = \frac{1}{L} \left( \log(\pi_\infty(x_1)) + \sum_{t=1}^{L-1} \log(P_{x_t, x_{t+1}}) \right)
+\end{equation}
+
+Les résultats obtenus pour les trois séquences sont les suivants :
+\begin{itemize}
+    \item \textbf{Séquence 1} : Log-vraisemblance moyenne = -1.2140
+    \item \textbf{Séquence 2} : Log-vraisemblance moyenne = -1.4864
+    \item \textbf{Séquence 3} : Log-vraisemblance moyenne = -1.2005
+\end{itemize}
+
+\subparagraph{Conclusion : Comparaison et puissance du modèle de Markov}
+
+L'analyse conjointe des fréquences empiriques et des log-vraisemblances 
+révèle l'intérêt fondamental de la modélisation par chaînes de Markov. 
+
+Dans un premier temps, l'observation des fréquences d'apparition simples 
+montre que les trois séquences possèdent une composition globale quasi-identique 
+(environ 29\% de A, 35\% de C, 20\% de G et 16\% de T). Sur la seule 
+base de ces comptages, on pourrait conclure que ces trois séquences proviennent 
+du même processus stochastique.
+
+Cependant, l'évaluation par la log-vraisemblance met en lumière une réalité différente, 
+car elle prend en compte la dynamique temporelle (les probabilités de transition entre 
+nucléotides adjacents) :
+\begin{itemize}
+    \item \textbf{La Séquence 3} obtient une log-vraisemblance moyenne ($-1.2005$) extrêmement proche de celle de la Séquence 1 ($-1.2140$), sur laquelle le modèle a été entraîné. Cela prouve que la Séquence 3 partage la même "signature" de transitions stochastiques que la Séquence 1. Elles ont très certainement été générées par le même processus.
+    \item \textbf{La Séquence 2}, en revanche, obtient une log-vraisemblance nettement inférieure ($-1.4864$). L'échelle étant logarithmique sur 2000 caractères, cette différence indique que la probabilité que la Séquence 2 ait été générée par notre matrice $P$ est infime. 
+\end{itemize}
+
+Nous pouvons donc conclure que bien que la Séquence 2 utilise les mêmes proportions de 
+nucléotides que la Séquence 1, leur ordonnancement est fondamentalement différent. 
+Le modèle de Markov réussit là où le simple comptage échoue : il détecte que la 
+Séquence 2 est une anomalie générée par un processus 
+(ou un modèle de fond biologique) distinct.

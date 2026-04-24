@@ -1,0 +1,42 @@
+\subsubsection{Ergodicité}
+
+Une chaîne de Markov est dite ergodique si elle est irréductible 
+(il est possible d'atteindre n'importe quel état depuis n'importe quel autre) et apériodique. 
+Pour une telle chaîne, le théorème ergodique stipule que la proportion du temps passé dans un 
+état $i$ sur une trajectoire infiniment longue converge vers la probabilité 
+stationnaire $\pi_i$ de cet état :
+\begin{equation}
+    \lim_{N \to \infty} \frac{1}{N} \sum_{t=1}^N \mathbf{1}_{\{X_t = i\}} = \pi_i
+\end{equation}
+
+Pour vérifier expérimentalement cette propriété, nous avons simulé une trajectoire de la 
+chaîne en générant une nouvelle séquence artificielle de $N = 50\,000$ nucléotides. À 
+chaque étape, la transition vers le nucléotide suivant a été tirée aléatoirement en respectant 
+strictement les probabilités de la matrice de transition $P$ estimée à la Question 1.1.1. 
+Nous avons ensuite calculé les fréquences empiriques d'apparition de chaque nucléotide dans 
+cette séquence générée.
+
+Le tableau ci-dessous compare ces fréquences empiriques temporelles avec la distribution 
+stationnaire $\pi_\infty$ calculée analytiquement à la Question 1.1.3 :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2} % Donne un peu d'espace dans les lignes du tableau
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Nucléotide} & \textbf{Fréquence empirique (N=50 000)} & \textbf{Distribution stationnaire ($\pi_\infty$)} \\
+    \hline
+    A & 0.2879 & 0.2881 \\ 
+    C & 0.3483 & 0.3497 \\ 
+    G & 0.2117 & 0.2091 \\ 
+    T & 0.1521 & 0.1531 \\ 
+    \hline
+\end{tabular}
+\end{center}
+
+\subparagraph{Conclusion}
+Nous constatons que les fréquences empiriques observées sur une longue réalisation de la 
+chaîne sont extrêmement proches des probabilités de la distribution stationnaire $\pi_\infty$ 
+(aux fluctuations statistiques d'échantillonnage près). Cela confirme numériquement que 
+notre modèle de séquence d'ADN forme bien une chaîne de Markov ergodique : 
+l'exploration temporelle du système (simulée sur 50 000 étapes) reflète fidèlement son 
+équilibre spatial théorique.

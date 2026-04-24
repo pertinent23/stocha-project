@@ -1,0 +1,52 @@
+\subsubsection{Preuve de la stationnarité de l'échantillonneur de Gibbs}
+
+L'objectif est de démontrer que la distribution jointe $p(Y)$ est la distribution 
+stationnaire de la chaîne de Markov construite par l'algorithme de Gibbs. 
+Pour ce faire, nous allons prouver que cette chaîne satisfait la 
+\textbf{condition de balance détaillée}.
+
+\subparagraph{Définition du noyau de transition}
+Soit $y = (y_1, \dots, y_n)$ l'état actuel de la chaîne. Dans l'échantillonneur de 
+Gibbs à balayage aléatoire, une transition vers un état $y'$ se déroule comme suit :
+\begin{enumerate}
+    \item On choisit un indice $j \in \{1, \dots, n\}$ avec une probabilité uniforme $1/n$.
+    \item On met à jour la $j$-ème composante en tirant $y'_j \sim p(Y_j \mid Y_{-j} = y_{-j})$.
+\end{enumerate}
+L'état d'arrivée est donc $y' = (y'_j, y_{-j})$. Si $y$ et $y'$ diffèrent 
+par plus d'une composante, la probabilité de transition $P(y \to y')$ est nulle.
+
+\subparagraph{Démonstration par la balance détaillée}
+Considérons deux états $y$ et $y'$ ne différant que par la composante $j$. 
+La probabilité de transition est :
+\begin{equation}
+    P(y \to y') = \frac{1}{n} p(y'_j \mid y_{-j})
+\end{equation}
+Vérifions si le flux de probabilité entre $y$ et $y'$ est équilibré, 
+c'est-à-dire si $p(y)P(y \to y') = p(y')P(y' \to y)$.
+
+En utilisant la définition de la probabilité conditionnelle 
+$p(y) = p(y_j \mid y_{-j}) p(y_{-j})$, le membre de gauche devient :
+\begin{align}
+    p(y) P(y \to y') &= \left[ p(y_j \mid y_{-j}) p(y_{-j}) \right] \times \left[ \frac{1}{n} p(y'_j \mid y_{-j}) \right] \nonumber \\
+    &= \frac{1}{n} p(y_j \mid y_{-j}) p(y'_j \mid y_{-j}) p(y_{-j})
+\end{align}
+
+De la même manière, pour le flux inverse partant de $y' = (y'_j, y_{-j})$ vers $y = (y_j, y_{-j})$ :
+\begin{align}
+    p(y') P(y' \to y) &= \left[ p(y'_j \mid y_{-j}) p(y_{-j}) \right] \times \left[ \frac{1}{n} p(y_j \mid y_{-j}) \right] \nonumber \\
+    &= \frac{1}{n} p(y'_j \mid y_{-j}) p(y_j \mid y_{-j}) p(y_{-j})
+\end{align}
+
+Nous observons que les deux expressions sont identiques. La condition de 
+balance détaillée est respectée :
+\begin{equation}
+    p(y) P(y \to y') = p(y') P(y' \to y)
+\end{equation}
+
+\subparagraph{Conclusion}
+La balance détaillée implique que la distribution $p(Y)$ est invariante par le noyau 
+de transition de Gibbs. Puisque $p(Y)$ est stationnaire et que la chaîne est 
+(sous réserve de positivité de la densité) irréductible et apériodique, la chaîne de 
+Markov convergera vers $p(Y)$ indépendamment de l'état initial $y^{(0)}$.
+
+\textit{Note sur l'implémentation :} Lors de la mise en œuvre pratique (Question 1.2.2), le tirage selon la loi conditionnelle $p(Y_j \mid Y_{-j})$ sera effectué en appliquant la \textbf{Proposition 3.6.3} via la méthode de la transformée inverse.
