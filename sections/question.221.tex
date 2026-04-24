@@ -1,0 +1,71 @@
+\subsection{Dérivations mathématiques}
+\paragraph{Question 2.2.1 : Lois conditionnelles de l'échantillonneur de Gibbs}
+
+Dans le cadre de la découverte de motifs \textit{de novo}, l'échantillonneur de Gibbs 
+alterne entre l'échantillonnage des paramètres du motif $\Theta$ et l'échantillonnage 
+des positions de départ $\mathcal{A} = \{A_1, \dots, A_N\}$. Nous dérivons ci-dessous 
+les deux distributions conditionnelles nécessaires à cet algorithme.
+
+\subparagraph{1. Distribution du profil de motif sachant les positions : $p(\Theta \mid \mathcal{A}, \mathcal{S}, \Phi)$}
+
+Par l'application du théorème de Bayes, la distribution a posteriori des paramètres du 
+motif est proportionnelle au produit de la vraisemblance des données et de la 
+distribution a priori :
+\begin{equation}
+    p(\Theta \mid \mathcal{A}, \mathcal{S}, \Phi) \propto p(\mathcal{S} \mid \mathcal{A}, \Theta, \Phi) \cdot p(\Theta)
+\end{equation}
+
+Pour chaque colonne $j \in \{1, \dots, W\}$ du motif, nous modélisons la 
+distribution a priori $p(\Theta_j)$ par une loi de Dirichlet de paramètres 
+$\alpha = (\alpha_A, \alpha_C, \alpha_G, \alpha_T)$ :
+\begin{equation}
+    p(\Theta_j) \sim \text{Dirichlet}(\alpha) \propto \prod_{i \in \{A,C,G,T\}} \Theta_{i,j}^{\alpha_i - 1}
+\end{equation}
+
+Étant donné les positions $\mathcal{A}$, les sous-séquences correspondant 
+aux motifs sont parfaitement identifiées. Soit $n_{i,j}$ le nombre d'occurrences du 
+nucléotide $i$ à la position $j$ du motif à travers toutes les séquences de 
+$\mathcal{S}$. La vraisemblance de ces observations suit une loi multinomiale :
+\begin{equation}
+    p(\text{motifs} \mid \Theta) \propto \prod_{i \in \{A,C,G,T\}} \Theta_{i,j}^{n_{i,j}}
+\end{equation}
+
+Puisque la loi de Dirichlet est l'a priori conjugué de la loi multinomiale, 
+le produit des deux équations précédentes montre que la distribution a posteriori pour 
+chaque colonne $j$ reste une loi de Dirichlet, dont les paramètres sont mis à jour en 
+ajoutant les comptages observés $n_{i,j}$ aux pseudo-comptes $\alpha_i$ :
+\begin{equation}
+    \Theta_j \mid \mathcal{A}, \mathcal{S} \sim \text{Dirichlet}(\alpha_A + n_{A,j}, \alpha_C + n_{C,j}, \alpha_G + n_{G,j}, \alpha_T + n_{T,j})
+\end{equation}
+
+\subparagraph{2. Distribution de la position sachant le motif : $p(A_k = a \mid \mathcal{A}_{-k}, \Theta, \mathcal{S}, \Phi)$}
+
+Nous cherchons la probabilité que le motif commence à la position $a$ dans la 
+séquence $S_k$, sachant le profil $\Theta$. La position $A_k$ est conditionnellement 
+indépendante des autres positions $\mathcal{A}_{-k}$ étant donné $\Theta$.
+
+Par le théorème de Bayes, cette probabilité est proportionnelle à la probabilité de 
+générer la séquence $S_k$ avec un motif commençant en $a$ :
+\begin{equation}
+    P(A_k = a \mid \Theta, S_k, \Phi) = \frac{P(S_k \mid A_k = a, \Theta, \Phi) P(A_k = a)}{\sum_{a'} P(S_k \mid A_k = a', \Theta, \Phi) P(A_k = a')}
+\end{equation}
+
+En supposant un a priori uniforme sur les positions possibles ($P(A_k = a)$ constant), nous pouvons évaluer la vraisemblance de la séquence. La séquence est composée de la région du motif (générée par $\Theta$) et du reste de la séquence (généré par le modèle de fond $\Phi$). 
+
+Pour simplifier les calculs, nous divisons cette vraisemblance par la probabilité 
+constante $P(S_k \mid \Phi)$ (probabilité que toute la séquence soit du bruit de fond). 
+Les termes du bruit de fond s'annulent partout, sauf sur la fenêtre du motif, ce qui 
+nous donne le poids $w_a$ :
+\begin{equation}
+    w_a = \prod_{j=0}^{W-1} \frac{\Theta_{S_{k, a+j}, j}}{\Phi_{S_{k, a+j}}}
+\end{equation}
+où $S_{k, a+j}$ est le nucléotide présent à la position $a+j$ dans la séquence $S_k$.
+
+La probabilité conditionnelle est finalement obtenue en normalisant ces poids sur 
+toutes les positions de départ valides (de $1$ à $L-W+1$, où $L$ est la longueur de la 
+séquence) :
+\begin{equation}
+    P(A_k = a \mid \Theta, S_k, \Phi) = \frac{w_a}{\sum_{a'=1}^{L-W+1} w_{a'}}
+\end{equation}
+C'est dans cette distribution discrète que la nouvelle position $A_k$ sera 
+échantillonnée (par la méthode de la transformée inverse vue à la Partie 1).

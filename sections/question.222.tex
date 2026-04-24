@@ -1,0 +1,25 @@
+\subsection{Implémentation et gestion des décalages}
+\paragraph{Question 2.2.2 : Architecture de l'algorithme de Gibbs}
+
+L'algorithme a été implémenté en Python en suivant scrupuleusement les 
+dérivations de la question 2.2.1. Les points clés de notre implémentation 
+sont les suivants :
+
+\begin{enumerate}
+    \item \textbf{Stabilité numérique :} Le calcul des poids $w_a$ pour les positions utilise le ratio entre la probabilité sous le modèle du motif $\Theta$ et le modèle de fond $\Phi$. Cela permet de mettre en évidence le signal du motif par rapport au bruit.
+    \item \textbf{Tirage de Dirichlet :} Nous utilisons la fonction \texttt{numpy.random.dirichlet} pour échantillonner la matrice $\Theta$. Les pseudo-comptes $\alpha$ sont fixés à $1$ (prior de Laplace) pour assurer qu'aucun nucléotide n'ait une probabilité nulle, ce qui rendrait le calcul des ratios impossible.
+    \item \textbf{Gestion du Phase Shift :} Un problème classique de l'échantillonneur de Gibbs est sa tendance à converger vers un motif décalé de quelques bases (optimum local). Pour pallier cela, nous avons introduit un mouvement de décalage global (Phase Shift) toutes les 10 itérations. Ce mouvement propose de décaler l'ensemble des positions $\mathcal{A}$ d'une unité. Ce saut permet à l'algorithme de s'échapper d'un alignement imparfait.
+\end{enumerate}
+
+\subparagraph{Pseudo-code de la boucle principale}
+\begin{lstlisting}
+Initialiser A au hasard
+Pour i de 1 a MaxIter:
+    1. Compter les nucleotides dans les fenetres definies par A
+    2. Tirer Theta ~ Dirichlet(alpha + counts)
+    3. Pour chaque sequence k:
+        Recalculer les poids w_a pour chaque position de depart
+        Tirer Ak ~ Multinomiale(Normaliser(w))
+    4. Si i % 10 == 0: 
+        Tenter un Phase Shift (Metropolis-Hastings)
+\end{lstlisting}

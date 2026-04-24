@@ -82,23 +82,54 @@
 \newpage
 \section{Détection de motifs}
 
-\subsection{Dérivations mathématiques}
+\input{sections/question.221.tex}
 
-\newpage
-\subsection{Implémentation et expérimentations}
+\input{sections/question.222.tex}
+
+\input{sections/question.223.tex}
 
 \newpage
 \section{Conclusion}
 
+Ce projet a permis d'explorer les fondements théoriques et les applications pratiques 
+des processus stochastiques à travers le problème complexe de la détection de motifs ADN. 
+Le passage d'une analyse statistique simple (comptage de fréquences) à une modélisation 
+par chaînes de Markov de premier ordre a mis en évidence l'importance de la dynamique de 
+transition pour caractériser la signature statistique d'une séquence.
+
+\paragraph{Synthèse des résultats}
+La première partie du travail a validé les propriétés fondamentales des chaînes de 
+Markov : l'estimation par maximum de vraisemblance, la convergence vers une distribution 
+stationnaire unique et l'ergodicité du système. L'implémentation de l'échantillonneur de 
+Gibbs sur un modèle jouet a ensuite démontré la capacité de cet algorithme MCMC à 
+converger vers une distribution jointe multidimensionnelle en utilisant uniquement des 
+tirages conditionnels.
+
+Dans la seconde partie, l'application de l'échantillonnage de Gibbs à la 
+bioinformatique a révélé la puissance de l'inférence Bayésienne. 
+L'utilisation d'un \textit{prior} de Dirichlet a permis de stabiliser l'estimation des 
+profils de motifs, tandis que la stratégie de redémarrages multiples et de 
+\textit{phase shifts} a prouvé son efficacité pour explorer un espace de solutions 
+complexe marqué par de nombreux optima locaux. Les performances obtenues sur les 
+données artificielles ($AJI \approx 0.80$) confirment la robustesse de l'algorithme 
+lorsque le signal est clairement défini.
+
+\paragraph{Limites et perspectives}
+Cependant, l'expérimentation sur les séquences biologiques réelles du répresseur 
+PurR ($AJI \approx 0.44$) souligne la distance entre les modèles mathématiques 
+idéalisés et la complexité de la réalité biologique. Les résultats suggèrent que :
+\begin{itemize}
+    \item Un modèle de fond d'ordre 0 est insuffisant pour capturer la structure complexe du génome d'\textit{E. coli} (biais de composition, motifs répétés, etc.).
+    \item La flexibilité biologique (mutations du site de fixation) nécessite des approches stochastiques encore plus souples.
+\end{itemize}
+
+Pour conclure, ce projet illustre parfaitement l'intérêt des méthodes de Monte Carlo 
+par chaînes de Markov : elles permettent de transformer un problème d'optimisation 
+globalement insoluble en une suite de tirages aléatoires locaux simples, offrant ainsi 
+une solution élégante et performante aux défis de la science des données moderne.
+
 % --- ANNEXE : CODE ---
 \newpage
 \appendix
-\section{Code source}
-\begin{lstlisting}
-# Exemple de fonction Python
-def estimation_P(sequence):
-    # Votre code ici
-    pass
-\end{lstlisting}
 
 \end{document}

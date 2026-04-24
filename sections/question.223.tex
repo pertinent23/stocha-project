@@ -1,0 +1,46 @@
+\subsection{Expérimentations et évaluation (Question 2.2.3)}
+
+Afin d'évaluer quantitativement les performances de notre implémentation de l'échantillonneur de Gibbs, nous avons utilisé deux métriques standards en découverte de motifs :
+\begin{itemize}
+    \item \textbf{Le Score de Consensus (Contenu en Information) :} Il mesure la conservation du motif trouvé en calculant l'entropie de Shannon sur la matrice $\Theta$. Pour un motif de longueur $W$, le score maximal est de $2W$ bits.
+    \item \textbf{L'Average Jaccard Index (AJI) :} Il mesure le taux de chevauchement moyen entre les positions prédites par notre algorithme et les positions réelles connues (fournies dans les fichiers de vérité terrain). Un score de 1.0 indique une prédiction parfaite sur toutes les séquences.
+\end{itemize}
+
+\subparagraph{1. Validation sur le jeu de données artificielles}
+Nous avons lancé l'algorithme sur le fichier \texttt{sequences\_artif.txt} avec une largeur de motif $W=10$ et le modèle de fond $\Phi$ fourni. Pour pallier les optima locaux, une approche par redémarrages multiples a été utilisée (10 chaînes indépendantes de $500$ itérations).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|}
+    \hline
+    \textbf{Métrique} & \textbf{Résultat (Données Artificielles)} \\
+    \hline
+    Score de Consensus & 8.71 bits (Max théorique: 20 bits) \\
+    Average Jaccard Index (AJI) & 0.8001 \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textit{Analyse :} Les résultats sur les données synthétiques valident notre implémentation. Un AJI de $0.80$ démontre que l'échantillonneur, couplé à la stratégie de \textit{Phase Shift} et de redémarrages multiples, évite avec succès les optima locaux décalés et converge vers les véritables coordonnées du motif. Le score de consensus de 8.71 bits, bien qu'inférieur au maximum théorique, reflète avec précision l'entropie inhérente à la matrice de probabilités génératrice (définie dans \texttt{artif\_motif\_parameters.txt}).
+
+\subparagraph{2. Application aux données biologiques réelles (PurR)}
+L'algorithme a ensuite été confronté au problème biologique de l'identification des sites de fixation du répresseur PurR chez \textit{E. coli} (\texttt{sequences-purr.txt}). Le modèle de fond $\Phi$ a été estimé empiriquement (modèle de Markov d'ordre 0) et $W$ a été fixé à 16.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|}
+    \hline
+    \textbf{Métrique} & \textbf{Résultat (Données PurR)} \\
+    \hline
+    Score de Consensus & 13.73 bits (Max théorique: 32 bits) \\
+    Average Jaccard Index (AJI) & 0.4430 \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textit{Analyse et conclusion :} L'analyse de séquences biologiques \textit{in vivo} révèle les limites d'un modèle stochastique simpliste. La baisse de l'AJI (0.4430, soit un chevauchement moyen d'environ la moitié du motif) et l'obtention d'un score de consensus modéré (13.73 bits) s'expliquent par deux facteurs majeurs :
+\begin{enumerate}
+    \item \textbf{La dégénérescence biologique :} Les véritables sites de fixation de PurR sont soumis à une variabilité évolutive naturelle (mutations silencieuses, "wobble"), ce qui rend le motif intrinsèquement moins pur qu'un signal mathématique strict.
+    \item \textbf{Les limites du modèle de fond :} Le modèle $\Phi$ d'ordre 0 suppose que l'ADN hors-motif est généré de manière purement aléatoire et indépendante. En réalité, le génome de \textit{E. coli} possède des structures complexes (biais GC, îlots CpG, régions codantes) qui créent de "faux signaux" locaux. Ces biais attirent l'échantillonneur vers des optima locaux biologiques (faux positifs).
+\end{enumerate}
+Néanmoins, notre implémentation Bayésienne parvient à isoler un profil $\Theta$ cohérent.
