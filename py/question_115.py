@@ -35,17 +35,20 @@ print("\n")
 
 
 def calculer_log_vraisemblance(sequence, matrice_P, dist_init):
-    # On gère les probabilités à 0 pour éviter le log(0) qui donne une erreur
-    # np.maximum remplace les 0 par un tout petit nombre (1e-10)
+    """
+    Calcule la log-vraisemblance d'une séquence sous le modèle de Markov.
+    On utilise le log pour éviter les débordements numériques avec les probabilités très petites.
+    """
+    # Gestion des probabilités à 0 : on ajoute un epsilon pour éviter log(0)
     log_P = np.log(np.maximum(matrice_P, 1e-10))
     log_pi = np.log(np.maximum(dist_init, 1e-10))
 
-    # 1. Log-probabilité du premier nucléotide
+    # Log-probabilité du premier nucléotide (selon la stationnaire)
     premier_nuc = sequence[0]
     idx_premier = nuc_to_idx[premier_nuc]
     log_vraisemblance = log_pi[idx_premier]
 
-    # 2. Somme des log-probabilités des transitions
+    # Log-probabilités des transitions successives
     for i in range(len(sequence) - 1):
         nuc_courant = sequence[i]
         nuc_suivant = sequence[i+1]

@@ -50,41 +50,23 @@ def get_counts(sequences, positions, W):
 
 def sample_theta(counts, alpha=1.0):
     """
-    ÉTAPE A : Tire un nouveau profil de motif (Theta) sachant les positions.
-
-    Utilise la conjugaison de Dirichlet (Prior) et Multinomiale (Vraisemblance)
-    pour échantillonner une nouvelle matrice de probabilités.
-
-    Args:
-        counts (np.ndarray): Matrice des comptages (4 x W).
-        alpha (float, optional): Pseudo-compte (Prior). Défaut à 1.0.
-
-    Returns:
-        np.ndarray: Nouvelle matrice Theta des probabilités du motif.
+    Échantillonne le profil du motif selon la distribution a posteriori.
+    Utilise la conjugaison Dirichlet-Multinomiale pour obtenir les paramètres mis à jour.
     """
     W = counts.shape[1]
     theta = np.zeros((4, W))
     for j in range(W):
-        # Tirage Dirichlet : Dirichlet(alpha + n_ij)
+        # Chaque colonne est échantillonnée indépendamment
+        # Dirichlet(alpha + comptages) est la distribution a posteriori
+        # Le pseudo-compte alpha=1 correspond au prior de Laplace (lissage uniforme)
         theta[:, j] = np.random.dirichlet(counts[:, j] + alpha)
     return theta
 
 
 def sample_positions(sequences, theta, phi, W):
     """
-    ÉTAPE B : Tire de nouvelles positions sachant le profil (Theta).
-
-    Calcule le ratio (Motif / Bruit de fond) pour chaque position possible,
-    le normalise en probabilités réelles, puis effectue un tirage.
-
-    Args:
-        sequences (list): Liste des séquences.
-        theta (np.ndarray): Matrice de probabilités du motif actuel.
-        phi (list): Probabilités du bruit de fond (A, C, G, T).
-        W (int): Longueur du motif.
-
-    Returns:
-        list: Nouvelles positions de départ pour le motif.
+    Échantillonne les positions du motif dans chaque séquence.
+    Calcule le ratio vraisemblance (motif / fond) pour chaque position possible.
     """
     nuc_to_idx = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
     new_positions = []
@@ -95,7 +77,7 @@ def sample_positions(sequences, theta, phi, W):
         weights = np.zeros(possible_starts)
 
         for a in range(possible_starts):
-            # Calcul du poids w_a (Ratio Motif / Bruit de fond)
+            # Ratio Motif/Fond : produit des ratios pour chaque position
             w = 1.0
             for j in range(W):
                 nuc = seq[a + j]
@@ -103,10 +85,10 @@ def sample_positions(sequences, theta, phi, W):
                 w *= (theta[idx, j] / phi[idx])
             weights[a] = w
 
-        # Normalisation pour obtenir une distribution de probabilité
+        # Normalisation des poids en probabilités
         prob = weights / np.sum(weights)
 
-        # Tirage de la position (Méthode de la transformée inverse via numpy)
+        # Tirage selon la distribution (transformée inverse implicite avec np.random.choice)
         choix = np.random.choice(possible_starts, p=prob)
         new_positions.append(choix)
 
@@ -115,29 +97,19 @@ def sample_positions(sequences, theta, phi, W):
 
 def phase_shift_move(sequences, positions, theta, phi, W):
     """
-    Tente de décaler toutes les positions d'un coup (Metropolis-Hastings).
-
-    C'est une astuce pour éviter que l'algorithme ne reste bloqué
-    dans un minimum local (décalage de phase).
-
-    Args:
-        sequences (list): Liste des séquences.
-        positions (list): Positions actuelles.
-        theta (np.ndarray): Matrice de profil actuelle.
-        phi (list): Probabilités de fond.
-        W (int): Longueur du motif.
-
-    Returns:
-        list: Les nouvelles positions (ou les anciennes si le saut est rejeté).
+    Tente un décalage global des positions pour échapper aux minima locaux.
+    C'est un mouvement Metropolis-Hastings avec probabilité d'acceptation 30%.
     """
+    # On propose un décalage de +1 ou -1 pour tous les motifs
     shift = np.random.choice([-1, 1])
     new_pos = [p + shift for p in positions]
 
-    # Vérifier si le décalage sort des limites des séquences
+    # Vérification que le décalage reste dans les limites des séquences
     for i, p in enumerate(new_pos):
         if p < 0 or p + W > len(sequences[i]):
-            return positions
+            return positions  # Rejet du mouvement
 
+    # Acceptation avec une probabilité de 30% (heuristique empirique)
     if np.random.rand() < 0.3:
         return new_pos
     return positions
@@ -145,34 +117,24 @@ def phase_shift_move(sequences, positions, theta, phi, W):
 
 def gibbs_motif_discovery(seq_file, W, phi, iterations=1000):
     """
-    L'algorithme principal de l'échantillonneur de Gibbs.
-
-    Boucle itérative alternant entre l'échantillonnage du profil (Theta)
-    et l'échantillonnage des positions.
-
-    Args:
-        seq_file (str): Nom du fichier contenant les séquences.
-        W (int): Longueur du motif recherché.
-        phi (list): Probabilités du bruit de fond.
-        iterations (int, optional): Nombre d'itérations. Défaut à 1000.
-
-    Returns:
-        tuple: (positions_finales, matrice_theta_finale)
+    Implémentation de l'échantillonneur de Gibbs pour la découverte de motifs.
+    Alterne entre l'échantillonnage du profil et celui des positions.
     """
     sequences = load_sequences(seq_file)
 
-    # Initialisation : Positions choisies totalement au hasard
+    # Initialisation aléatoire des positions
     positions = [np.random.randint(0, len(s) - W + 1) for s in sequences]
 
     for i in range(iterations):
-        # 1. Échantillonner le profil (Étape A)
+        # Étape A : Échantillonner le profil de motif
         counts = get_counts(sequences, positions, W)
         theta = sample_theta(counts)
 
-        # 2. Échantillonner les positions (Étape B)
+        # Étape B : Échantillonner les nouvelles positions
         positions = sample_positions(sequences, theta, phi, W)
 
-        # 3. Mouvement de décalage de phase (toutes les 10 itérations)
+        # Mouvement de phase shift tous les 10 itérations
+        # Permet d'éviter les alignements décalés (optima locaux)
         if i % 10 == 0:
             positions = phase_shift_move(
                 sequences, positions, theta, phi, W
@@ -187,10 +149,3 @@ def gibbs_motif_discovery(seq_file, W, phi, iterations=1000):
 
 # Paramètres de test (basés sur artif_background_parameters.txt)
 phi_test = [0.2, 0.3, 0.3, 0.2]  # A, C, G, T
-
-# final_pos, final_theta = gibbs_motif_discovery(
-#     '../sequences-artif/sequences_artif.txt', 10, phi_test
-# )
-# print("Positions finales des motifs :", final_pos)
-# print("Matrice Theta finale :\n", final_theta)
-# print("\n")

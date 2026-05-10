@@ -26,9 +26,10 @@ soient très différentes selon la condition initiale, les probabilités
 finissent par se stabiliser et converger vers des valeurs constantes après 
 environ $t = 3$ itérations. 
 
-On remaque que peu importe la condition initiale, les probabilités convergent vers le même ordre
-$P(C) > P(A) > P(G) > P(T)$. Cependant quand la distribution initiale est uniforme on a plus d'écart
-de chance à long terme que lorsqu'au départ on a un C.
+Indépendamment de la condition initiale, les probabilités convergent toutes vers le même ordre
+$P(C) > P(A) > P(G) > P(T)$. Les différences observées lors des premières étapes (phase transitoire) 
+disparaissent rapidement, démontrant que la chaîne « oublie » son point de départ en convergeant 
+vers sa distribution stationnaire unique.
 
 En calculant la matrice $P^t$ pour une valeur de $t$ suffisamment grande (par exemple $t=50$), nous observons le résultat suivant :
 \begin{equation}

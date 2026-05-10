@@ -1,8 +1,11 @@
 import numpy as np
 from root import seq1
 
-# Dictionnaire pour mapper les lettres aux indices (A=0, C=1, G=2, T=3)
-seq1 = seq1.upper()  # Assurez-vous que la séquence est en majuscules
+# On normalise la séquence en majuscules pour la cohérence
+seq1 = seq1.upper()
+
+# Mapping des nucléotides vers des indices (pour la matrice de transition)
+# Le choix 0->A, 1->C, 2->G, 3->T est arbitraire mais consistant
 nuc_to_idx = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 P_counts = np.zeros((4, 4))
 

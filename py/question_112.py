@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 from question_111 import P_matrix as P
 
 nucleotides = ['A', 'C', 'G', 'T']
-t_max = 20  # Nombre d'étapes de temps à observer
+# On observe l'évolution sur 20 étapes pour voir la convergence vers la stationnaire
+t_max = 20
 
-# 2. Définition des conditions initiales
+# Test sur deux conditions initiales différentes
 u0_uniforme = np.array([0.25, 0.25, 0.25, 0.25])
 u0_certain = np.array([0, 1, 0, 0])  # Départ certain sur 'C'
 
@@ -24,7 +25,7 @@ def calculer_evolution(u0, P, t_max):
 hist_uniforme = calculer_evolution(u0_uniforme, P, t_max)
 hist_certain = calculer_evolution(u0_certain, P, t_max)
 
-# 3. Génération des graphiques
+# Création de deux graphiques pour comparer les deux trajectoires
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
 couleurs = ['blue', 'orange', 'green', 'red']
@@ -63,7 +64,7 @@ plt.tight_layout()
 plt.savefig('../images/evolution_markov.png')  # Sauvegarde l'image pour LaTeX
 plt.show()
 
-# 4. Calcul de P^t pour un t grand (ex: t=50)
+# Calcul de P^t pour un t grand (ex: t=50)
 P_t50 = np.linalg.matrix_power(P, 50)
 print("\nMatrice P^50 (t=50) :")
 print(np.round(P_t50, 4))

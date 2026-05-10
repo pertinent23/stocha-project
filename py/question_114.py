@@ -4,24 +4,23 @@ from question_113 import pi_infini as pi_infini_theorique
 
 nucleotides = ['A', 'C', 'G', 'T']
 
-# 2. Paramètres de la simulation
-# Longueur de la séquence à générer
+# Pour vérifier le théorème ergodique, on génère une longue trajectoire
+# 50000 nucléotides suffisent pour avoir une bonne convergence statistique
 N = 50000
-etat_courant = 0  # On commence arbitrairement par 'A' (indice 0)
+etat_courant = 0  # Début arbitraire par 'A'
 comptages = np.zeros(4)
 
-# 3. Génération de la séquence (Marche aléatoire)
+# Simulation : on marche aléatoirement selon la chaîne de Markov
 print(f"Génération d'une séquence de {N} nucléotides en cours...")
 for _ in range(N):
     comptages[etat_courant] += 1
-    # On tire le prochain état en utilisant la ligne
-    # de P correspondant à l'état courant
+    # Le prochain nucléotide est tiré selon les probabilités de transition
     etat_courant = np.random.choice([0, 1, 2, 3], p=P[etat_courant])
 
-# 4. Calcul des fréquences empiriques
+# Calcul des fréquences empiriques d'apparition de chaque nucléotide
 frequences_empiriques = comptages / N
 
-# 5. Affichage et comparaison
+# Affichage et comparaison avec la distribution stationnaire théorique
 print("\nComparaison (Vérification du Théorème Ergodique) :")
 header = (
     "Nucléotide | Fréq. Empirique | Prob. Stationnaire (pi) | "

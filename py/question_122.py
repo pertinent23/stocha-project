@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 1. Définition de la matrice cible QY (4x4)
-# Q(i,j) = (i+j)/80 pour i,j dans {1,2,3,4}
+# Construction de la matrice cible (distribution jointe discrète 4x4)
+# Formule : Q(i,j) = (i+j)/80 pour i,j dans {1,2,3,4}
+# Cette distribution est strictement positive (garantit l'irréductibilité)
 QY = np.fromfunction(lambda i, j: (i+1 + j+1)/80, (4, 4))
 
 

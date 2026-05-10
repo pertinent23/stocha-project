@@ -1,0 +1,18 @@
+\section{Stratégie pour la compétition (Longueurs inconnues)}
+
+Pour la phase de compétition, nous avons été confrontés à deux défis majeurs : l'absence de modèle de fond $\Phi$ fourni et l'incertitude sur la longueur $W$ des motifs. Nous avons implémenté les adaptations suivantes pour maximiser nos scores AJI et PPV :
+
+\subparagraph{1. Estimation dynamique du modèle de fond}
+Puisque le modèle $\Phi$ n'était pas communiqué, nous l'avons estimé empiriquement à la volée. Pour chaque jeu de données, un modèle de Markov d'ordre 0 a été calculé en extrayant les fréquences globales des nucléotides (A, C, G, T) sur l'ensemble des séquences soumises, fournissant ainsi une base robuste pour le calcul des vraisemblances relatives.
+
+\subparagraph{2. Découverte de la longueur $W$ par densité d'information}
+L'algorithme de Gibbs classique nécessite une fenêtre $W$ fixe. Pour déterminer la taille optimale du motif dans les intervalles imposés ($[10, 15]$ pour les données artificielles et $[15, 30]$ pour les données réelles), nous avons itéré notre algorithme sur chaque valeur de $W$.
+
+Étant donné que le score de consensus total croît structurellement avec l'ajout de colonnes, nous ne pouvions pas comparer directement le score d'un motif de taille 10 avec un de taille 15. Nous avons donc utilisé le \textbf{Contenu en Information Moyen par Colonne} (Densité d'information, en bits/colonne) comme critère de sélection :
+\begin{equation}
+    \text{Densité d'Information} = \frac{1}{W} \sum_{j=1}^{W} \left( 2.0 + \sum_{i \in \{A,C,G,T\}} \Theta_{i,j} \log_2(\Theta_{i,j}) \right)
+\end{equation}
+La longueur $W$ retenue pour la soumission finale est celle maximisant cette densité, garantissant ainsi l'extraction du "coeur" le plus conservé du motif, ce qui favorise un indice de Jaccard (AJI) optimal.
+
+\subparagraph{3. Prise en compte de la variabilité biologique}
+Pour le jeu de données réel, les consignes précisaient que les motifs pouvaient avoir des longueurs variables et de multiples occurrences. L'échantillonneur de Gibbs standard (implémenté ici) extrait une occurrence unique de taille fixe par séquence. En maximisant la densité d'information via des redémarrages multiples ($N=10$) et en calibrant dynamiquement $W$, nous approximons l'empreinte centrale (le noyau de liaison le plus fort du facteur de transcription), ce qui constitue la meilleure heuristique mathématique pour maximiser les métriques AJI et PPV sous les contraintes de notre modèle Bayésien.

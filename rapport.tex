@@ -88,6 +88,8 @@
 
 \input{sections/question.223.tex}
 
+\input{sections/competition.tex}
+
 \newpage
 \section{Conclusion}
 
@@ -114,21 +116,6 @@ complexe marqué par de nombreux optima locaux. Les performances obtenues sur le
 données artificielles ($AJI \approx 0.80$) confirment la robustesse de l'algorithme 
 lorsque le signal est clairement défini.
 
-\paragraph{Limites et perspectives}
-Cependant, l'expérimentation sur les séquences biologiques réelles du répresseur 
-PurR ($AJI \approx 0.44$) souligne la distance entre les modèles mathématiques 
-idéalisés et la complexité de la réalité biologique. Les résultats suggèrent que :
-\begin{itemize}
-    \item Un modèle de fond d'ordre 0 est insuffisant pour capturer la structure complexe du génome d'\textit{E. coli} (biais de composition, motifs répétés, etc.).
-    \item La flexibilité biologique (mutations du site de fixation) nécessite des approches stochastiques encore plus souples.
-\end{itemize}
-
-Pour conclure, ce projet illustre parfaitement l'intérêt des méthodes de Monte Carlo 
-par chaînes de Markov : elles permettent de transformer un problème d'optimisation 
-globalement insoluble en une suite de tirages aléatoires locaux simples, offrant ainsi 
-une solution élégante et performante aux défis de la science des données moderne.
-
-% --- ANNEXE : CODE ---
 \newpage
 \appendix
 

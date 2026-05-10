@@ -81,8 +81,8 @@ def charger_positions_csv(filepath):
 
 def _executer_un_gibbs(args):
     """
-    Fonction enveloppe (wrapper) nécessaire pour le multiprocessing.
-    Exécute un seul algorithme de Gibbs et retourne son score.
+    Wrapper pour le multiprocessing.
+    Exécute une instance indépendante de l'algorithme de Gibbs et retourne son score.
     """
     seq_file, W, phi, iterations = args
     pos, theta = gibbs_motif_discovery(seq_file, W, phi, iterations)
@@ -92,8 +92,11 @@ def _executer_un_gibbs(args):
 
 def run_gibbs_parallele(seq_file, W, phi, num_restarts=10, iterations=500):
     """
-    Lance l'échantillonneur de Gibbs de multiples fois en parallèle
-    et retourne le résultat qui maximise le score de consensus.
+    Lance l'échantillonneur de Gibbs plusieurs fois en parallèle.
+    Retourne la solution avec le meilleur score de consensus.
+    
+    Le multiprocessing permet de réduire le temps de calcul :
+    chaque restart indépendant s'exécute sur un cœur différent du CPU.
     """
     meilleur_score = -1
     meilleures_positions = []
