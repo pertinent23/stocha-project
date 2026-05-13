@@ -1,0 +1,16 @@
+\frametitle{Focus : Parallélisation (Restarts)}
+\begin{lstlisting}
+def run_gibbs_parallele(seq_file, W, phi, num_restarts=10):
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        taches = [(seq_file, W, phi, 500) for _ in range(num_restarts)]
+        resultats = executor.map(_executer_un_gibbs, taches)
+
+        for score, pos, theta in resultats:
+            if score > meilleur_score:
+                meilleur_score, meilleures_pos = score, pos
+    return meilleures_pos, meilleur_theta
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{ProcessPoolExecutor :} Utilise tous les cœurs du CPU pour explorer l'espace de recherche en parallèle.
+    \item \textbf{Critère de sélection :} Le score de consensus final.
+\end{itemize}

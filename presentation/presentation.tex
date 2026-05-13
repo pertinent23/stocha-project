@@ -1,0 +1,369 @@
+\documentclass[10pt]{beamer}
+
+% --- PACKAGES ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{bm}
+
+% --- THEME ---
+\usetheme{Madrid}
+\usecolortheme{whale}
+
+% --- CONFIGURATION DU CODE (Python) ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\tiny,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single
+}
+
+% --- INFORMATIONS ---
+\title[Détection de Motifs ADN]{Détection de motifs ADN par Échantillonnage de Gibbs}
+\subtitle{Projet de Processus Stochastiques}
+\author{Franck Duval HEUBA}
+\date{Mai 2026}
+
+\begin{document}
+
+% --- SLIDE DE TITRE ---
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% --- SLIDE 1: INTRODUCTION ---
+\begin{frame}{Le Problème : Découverte de motifs}
+    \begin{itemize}
+        \item \textbf{Objectif :} Identifier une séquence courte et conservée (motif) cachée dans plusieurs séquences d'ADN.
+        \item \textbf{Inconnues :} 
+            \begin{enumerate}
+                \item Le profil statistique du motif $\Theta$ (PWM).
+                \item Les positions de départ $\mathcal{A} = \{A_1, \dots, A_N\}$ dans chaque séquence.
+            \end{enumerate}
+        \item \textbf{Difficulté :} L'espace des solutions est immense et parsemé d'optima locaux.
+        \item \textbf{Solution :} Utiliser un algorithme MCMC (Gibbs) pour explorer la distribution jointe $p(\Theta, \mathcal{A} \mid \mathcal{S})$.
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 2: CADRE MATHÉMATIQUE ---
+\begin{frame}{Inférence Bayésienne : Lois en présence}
+    \textbf{La Loi de Dirichlet (L'A Priori)}
+    \begin{itemize}
+        \item Définie sur un simplexe (somme des probabilités = 1).
+        \item Densité pour une colonne $j$ : 
+        $p(\Theta_j | \alpha) \propto \prod_{i \in \{A,C,G,T\}} \Theta_{i,j}^{\alpha_i - 1}$
+        \item \textbf{$\alpha_i$} : Pseudo-comptes (connaissance a priori).
+    \end{itemize}
+    \vspace{0.3cm}
+    \textbf{L'Échantillonnage de Gibbs (MCMC)}
+    \begin{itemize}
+        \item Simule une distribution jointe complexe par échantillonnages successifs selon les \textbf{lois conditionnelles complètes}.
+        \item Garantit la convergence vers la distribution cible via la condition de \textbf{balance détaillée}.
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 3: DÉMONSTRATION (1/2) ---
+\begin{frame}{Démonstration : Conjugaison Dirichlet-Multinomiale}
+    \begin{enumerate}
+        \item \textbf{Théorème de Bayes :} 
+        $p(\Theta \mid \mathcal{A}, \mathcal{S}) \propto p(\mathcal{S} \mid \mathcal{A}, \Theta) \times p(\Theta)$
+        \item \textbf{Indépendance des colonnes :} On suppose que chaque position $j$ du motif est statistiquement indépendante $p(\Theta) = \prod_{j=1}^{W} p(\Theta_j)$.
+        \item \textbf{A Priori (Dirichlet) :} 
+        $p(\Theta_j) \propto \prod_{i} \Theta_{i,j}^{\alpha_i - 1}$
+        \item \textbf{Vraisemblance (Multinomiale) :} Les comptages $n_{i,j}$ dans les fenêtres suivent une loi multinomiale :
+        $p(\mathcal{S} | \mathcal{A}, \Theta) \propto \prod_{j} \prod_{i} \Theta_{i,j}^{n_{i,j}}$
+    \end{enumerate}
+\end{frame}
+
+% --- SLIDE 4: DÉMONSTRATION (2/2) ---
+\begin{frame}{Démonstration : Conjugaison Dirichlet-Multinomiale}
+    \begin{enumerate}
+        \setcounter{enumi}{4}
+        \item \textbf{Fusion par produit :} On multiplie l'a priori et la vraisemblance.
+        \item \textbf{Simplification des exposants ($x^a \cdot x^b = x^{a+b}$) :}
+        \begin{equation}
+            p(\Theta_j | \mathcal{A}, \mathcal{S}) \propto \prod_{i \in \{A,C,G,T\}} \Theta_{i,j}^{(\alpha_i + n_{i,j}) - 1}
+        \end{equation}
+        \item \textbf{Identification :} On reconnaît la forme d'une loi de Dirichlet.
+    \end{enumerate}
+    \begin{block}{Conclusion (Propriété de Conjugaison)}
+        $\Theta_j \mid \mathcal{A}, \mathcal{S} \sim \text{Dirichlet}(\alpha_A + n_{A,j}, \alpha_C + n_{C,j}, \alpha_G + n_{G,j}, \alpha_T + n_{T,j})$
+    \end{block}
+    \textit{C'est cette mise à jour qui est implémentée dans le code Python.}
+\end{frame}
+
+
+% --- SLIDE 5: ÉCHANTILLONNAGE DES POSITIONS (1/3) ---
+\begin{frame}{Échantillonnage des positions : Fondements}
+    Nous cherchons à échantillonner la position $A_k$ du motif dans la séquence $S_k$, sachant le profil $\Theta$ et le modèle de fond $\Phi$.
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Objectif :} Calculer la distribution discrète $p(A_k = a \mid \Theta, S_k, \Phi)$.
+        \item \textbf{Hypothèse :} On suppose un \textbf{a priori uniforme} sur les positions possibles ($p(A_k=a) = \text{constante}$).
+        \item \textbf{Règle de Bayes :} 
+        \begin{equation}
+            P(A_k = a \mid \Theta, S_k, \Phi) = \frac{P(S_k \mid A_k = a, \Theta, \Phi)}{\sum_{a'} P(S_k \mid A_k = a', \Theta, \Phi)}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 6: ÉCHANTILLONNAGE DES POSITIONS (2/3) ---
+\begin{frame}{Démonstration : Le ratio de vraisemblance}
+    Pour simplifier le calcul, on divise la vraisemblance par la probabilité constante $P(S_k \mid \Phi)$ (probabilité que la séquence soit du "fond" pur).
+    \begin{itemize}
+        \item \textbf{Vraisemblance avec motif en $a$ :}
+        $P(S_k \mid A_k=a, \dots) = \underbrace{\prod_{j=0}^{W-1} \Theta_{S_{k,a+j}, j}}_{\text{Fenêtre Motif}} \times \underbrace{\prod_{t \notin [a, a+W-1]} \Phi_{S_{k,t}}}_{\text{Reste (Fond)}}$
+        \item \textbf{Division par le Fond :} $P(S_k \mid \Phi) = \prod_{t} \Phi_{S_{k,t}}$
+        \item \textbf{Résultat (Poids $w_a$) :} Les termes hors-fenêtre s'annulent.
+        \begin{equation}
+            w_a = \frac{P(S_k \mid A_k = a, \Theta, \Phi)}{P(S_k \mid \Phi)} = \prod_{j=0}^{W-1} \frac{\Theta_{S_{k, a+j}, j}}{\Phi_{S_{k, a+j}}}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 7: ÉCHANTILLONNAGE DES POSITIONS (3/3) ---
+\begin{frame}{Normalisation et Tirage stochastique}
+    Une fois les poids $w_a$ calculés pour chaque position de départ possible $a \in \{1, \dots, L-W+1\}$, on obtient la distribution de probabilité :
+    \vspace{0.3cm}
+    \begin{block}{Distribution discrète finale}
+        \begin{equation}
+            P(A_k = a \mid \Theta, S_k, \Phi) = \frac{w_a}{\sum_{a'=1}^{L-W+1} w_{a'}}
+        \end{equation}
+    \end{block}
+    \vspace{0.3cm}
+    \begin{itemize}
+        \item \textbf{Interprétation :} Plus le ratio Motif/Fond est élevé sur une fenêtre, plus la probabilité d'y échantillonner le motif est forte.
+        \item \textbf{Implémentation :} Tirage selon cette loi multinomiale (méthode de la transformée inverse).
+    \end{itemize}
+\end{frame}
+
+
+% --- SLIDE 8: BOUCLE PRINCIPALE DU GIBBS ---
+\begin{frame}[fragile]{Implémentation : Boucle principale}
+\begin{lstlisting}
+def gibbs_motif_discovery(seq_file, W, phi, iterations=1000):
+    sequences = load_sequences(seq_file)
+    positions = [np.random.randint(0, len(s)-W+1) for s in sequences]
+
+    for i in range(iterations):
+        # Etape A : Profil (Theta)
+        counts = get_counts(sequences, positions, W)
+        theta = sample_theta(counts)
+        # Etape B : Positions (Ak)
+        positions = sample_positions(sequences, theta, phi, W)
+        # Evasion : Phase Shift
+        if i % 10 == 0:
+            positions = phase_shift_move(sequences, positions, theta, phi, W)
+    return positions, theta
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{Alternance :} L'algorithme bascule entre l'espace des paramètres ($\Theta$) et l'espace des variables cachées ($\mathcal{A}$).
+\end{itemize}
+\end{frame}
+
+% --- SLIDE 9: FOCUS CODE : DIRICHLET ---
+\begin{frame}[fragile]{Focus : Échantillonnage de $\Theta$}
+\begin{lstlisting}
+def sample_theta(counts, alpha=1.0):
+    W = counts.shape[1]
+    theta = np.zeros((4, W))
+    for j in range(W):
+        # Chaque colonne est independante
+        # Dirichlet(alpha + comptages)
+        theta[:, j] = np.random.dirichlet(counts[:, j] + alpha)
+    return theta
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{numpy.random.dirichlet :} Permet un tirage vectoriel efficace.
+    \item \textbf{alpha :} Assure la positivité stricte du profil pour éviter les divisions par zéro lors du calcul des ratios.
+\end{itemize}
+\end{frame}
+
+% --- SLIDE 10: FOCUS CODE : POSITIONS ---
+\begin{frame}[fragile]{Focus : Échantillonnage des positions}
+\begin{lstlisting}
+for a in range(possible_starts):
+    w = 1.0
+    for j in range(W):
+        nuc = seq[a + j]
+        # Ratio de vraisemblance local
+        w *= (theta[nuc_to_idx[nuc], j] / phi[nuc_to_idx[nuc]])
+    weights[a] = w
+
+# Tirage selon la distribution normalisee
+prob = weights / np.sum(weights)
+choix = np.random.choice(possible_starts, p=prob)
+\end{lstlisting}
+\begin{itemize}
+    \item On traite chaque séquence indépendamment.
+    \item Le vecteur \texttt{weights} contient le poids de chaque "départ" possible.
+\end{itemize}
+\end{frame}
+
+% --- SLIDE 11: FOCUS CODE : PHASE SHIFT ---
+\begin{frame}[fragile]{Focus : Mouvement de Phase Shift}
+\begin{lstlisting}
+def phase_shift_move(sequences, positions, theta, phi, W):
+    shift = np.random.choice([-1, 1])
+    new_pos = [p + shift for p in positions]
+    
+    # Verification des limites
+    if not are_within_bounds(new_pos, sequences, W):
+        return positions
+
+    # Acceptation heuristique (Probabilite fixe de 30%)
+    if np.random.rand() < 0.3:
+        return new_pos
+    return positions
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{Metropolis-Hastings simplifié :} On accepte un décalage global pour s'aligner sur le "vrai" début du motif biologique.
+\end{itemize}
+\end{frame}
+
+% --- SLIDE 12: FOCUS CODE : MULTIPROCESSING ---
+\begin{frame}[fragile]{Focus : Parallélisation (Restarts)}
+\begin{lstlisting}
+def run_gibbs_parallele(seq_file, W, phi, num_restarts=10):
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        taches = [(seq_file, W, phi, 500) for _ in range(num_restarts)]
+        resultats = executor.map(_executer_un_gibbs, taches)
+        
+        for score, pos, theta in resultats:
+            if score > meilleur_score:
+                meilleur_score, meilleures_pos = score, pos
+    return meilleures_pos, meilleur_theta
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{ProcessPoolExecutor :} Utilise tous les cœurs du CPU pour explorer l'espace de recherche en parallèle.
+    \item \textbf{Critère de sélection :} Le score de consensus final.
+\end{itemize}
+\end{frame}
+
+% --- SLIDE 13: GESTION DES OPTIMA LOCAUX ---
+\begin{frame}{Gestion des Optima Locaux}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Phase Shift :}
+            \begin{itemize}
+                \item Propose un décalage global de $\pm 1$ base.
+                \item Acceptation stochastique (30\%).
+                \item Évite que le motif ne reste "décalé".
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Redémarrages :}
+            \begin{itemize}
+                \item 10 exécutions parallèles.
+                \item Sélection par le \textbf{Score de Consensus}.
+                \item $IC = \sum (2 - \text{Entropie})$.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% --- SLIDE 14: MÉTRIQUE 1 : SCORE DE CONSENSUS ---
+\begin{frame}{Métrique 1 : Score de Consensus (IC)}
+    Le score de consensus mesure la pureté statistique du motif trouvé à travers le \textbf{Contenu en Information} (Information Content).
+    \begin{itemize}
+        \item \textbf{Formule (pour une colonne $j$) :}
+        $IC_j = 2 + \sum_{i \in \{A,C,G,T\}} p_{i,j} \log_2(p_{i,j})$
+        \item \textbf{Représentation :} Il mesure la réduction d'incertitude (entropie). Un score de 2 bits signifie une conservation parfaite d'un seul nucléotide.
+        \item \textbf{Pourquoi le calculer ?} 
+        \begin{enumerate}
+            \item C'est notre \textbf{fonction objectif} : l'échantillonneur de Gibbs cherche naturellement à maximiser cette conservation.
+            \item Il sert de critère de sélection pour garder la meilleure chaîne lors des redémarrages multiples.
+        \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 15: MÉTRIQUE 2 : AVERAGE JACCARD INDEX ---
+\begin{frame}{Métrique 2 : Average Jaccard Index (AJI)}
+    L'AJI permet d'évaluer la précision spatiale de l'algorithme par rapport à une vérité terrain (Ground Truth).
+    \begin{itemize}
+        \item \textbf{Formule (Indice de Jaccard $J$) :}
+        $J(V, P) = \frac{\text{Intersection}(V, P)}{\text{Union}(V, P)} = \frac{W - |vrai\_debut - pred\_debut|}{W + |vrai\_debut - pred\_debut|}$
+        \item \textbf{Représentation :} Un score de $1.0$ indique un alignement parfait. Un score de $0.5$ signifie que la moitié du motif est correctement localisée.
+        \item \textbf{Pourquoi le calculer ?} 
+        \begin{enumerate}
+            \item Pour \textbf{valider l'algorithme} sur des données synthétiques où l'on connaît la réponse.
+            \item Pour quantifier la difficulté de détection sur des données biologiques (PurR) où le signal est "dégénéré".
+        \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 16: LA COMPÉTITION (SÉLECTION DE W) ---
+\begin{frame}{La Compétition : Optimisation de la largeur $W$}
+    \begin{itemize}
+        \item \textbf{Problème :} Comment choisir la largeur optimale $W$ quand elle est inconnue ?
+        \item \textbf{Approche :} Tester une plage de valeurs (ex: $W \in [15, 30]$).
+        \item \textbf{Métrique de Sélection :} La \textbf{Densité d'Information}.
+        \begin{equation}
+            \text{Densité} = \frac{\text{Score de Consensus}}{W}
+        \end{equation}
+        \item \textbf{Pourquoi ?} Le score total augmente naturellement avec $W$. La densité permet de trouver le "cœur" du motif là où l'information est la plus concentrée par colonne.
+    \end{itemize}
+    \begin{block}{Estimation du Fond}
+        Le modèle $\Phi$ est estimé empiriquement sur l'ensemble des séquences de la compétition pour une précision maximale.
+    \end{block}
+\end{frame}
+
+
+% --- SLIDE 17: RÉSULTATS ---
+\begin{frame}{Résultats et Performances}
+    \begin{table}
+        \centering
+        \begin{tabular}{|l|c|c|}
+            \hline
+            \textbf{Jeu de données} & \textbf{AJI (Précision)} & \textbf{Consensus} \\
+            \hline
+            Données Artificielles & \textbf{0.8001} & 8.71 bits \\
+            Données PurR (Biologiques) & 0.4430 & 13.73 bits \\
+            \hline
+        \end{tabular}
+    \end{table}
+    \begin{itemize}
+        \item \textbf{Analyse :} Succès sur données synthétiques (signal pur).
+        \item \textbf{Limites Bio :} La dégénérescence des sites de fixation et les biais du génome (modèle de fond d'ordre 0 trop simple) expliquent la baisse d'AJI sur PurR.
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 18: RÉFÉRENCES ---
+\begin{frame}{Références et Ressources}
+    \begin{itemize}
+        \item \textbf{Bibm@th.net} : Bibliothèque complète des mathématiques (cours, exercices, dictionnaire).
+        \item \textbf{Khan Academy} : Plateforme de cours et exercices de mathématiques (collège au supérieur).
+        \item \textbf{Jaicompris.com} : Cours et exercices corrigés en vidéo pour prépa et lycée.
+    \end{itemize}
+\end{frame}
+
+% --- SLIDE 19: CONCLUSION ---
+\begin{frame}{Conclusion}
+    \centering
+    \textbf{Merci de votre attention !}
+\end{frame}
+
+\end{document}

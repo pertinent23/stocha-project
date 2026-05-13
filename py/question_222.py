@@ -51,14 +51,16 @@ def get_counts(sequences, positions, W):
 def sample_theta(counts, alpha=1.0):
     """
     Échantillonne le profil du motif selon la distribution a posteriori.
-    Utilise la conjugaison Dirichlet-Multinomiale pour obtenir les paramètres mis à jour.
+    Utilise la conjugaison Dirichlet-Multinomiale
+    pour obtenir les paramètres mis à jour.
     """
     W = counts.shape[1]
     theta = np.zeros((4, W))
     for j in range(W):
         # Chaque colonne est échantillonnée indépendamment
         # Dirichlet(alpha + comptages) est la distribution a posteriori
-        # Le pseudo-compte alpha=1 correspond au prior de Laplace (lissage uniforme)
+        # Le pseudo-compte alpha=1 correspond au prior de
+        # Laplace (lissage uniforme)
         theta[:, j] = np.random.dirichlet(counts[:, j] + alpha)
     return theta
 
@@ -66,7 +68,8 @@ def sample_theta(counts, alpha=1.0):
 def sample_positions(sequences, theta, phi, W):
     """
     Échantillonne les positions du motif dans chaque séquence.
-    Calcule le ratio vraisemblance (motif / fond) pour chaque position possible.
+    Calcule le ratio vraisemblance (motif / fond)
+    pour chaque position possible.
     """
     nuc_to_idx = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
     new_positions = []
@@ -88,7 +91,8 @@ def sample_positions(sequences, theta, phi, W):
         # Normalisation des poids en probabilités
         prob = weights / np.sum(weights)
 
-        # Tirage selon la distribution (transformée inverse implicite avec np.random.choice)
+        # Tirage selon la distribution
+        # (transformée inverse implicite avec np.random.choice)
         choix = np.random.choice(possible_starts, p=prob)
         new_positions.append(choix)
 

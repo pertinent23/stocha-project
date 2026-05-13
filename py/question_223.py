@@ -82,7 +82,8 @@ def charger_positions_csv(filepath):
 def _executer_un_gibbs(args):
     """
     Wrapper pour le multiprocessing.
-    Exécute une instance indépendante de l'algorithme de Gibbs et retourne son score.
+    Exécute une instance indépendante de l'algorithme
+    de Gibbs et retourne son score.
     """
     seq_file, W, phi, iterations = args
     pos, theta = gibbs_motif_discovery(seq_file, W, phi, iterations)
@@ -94,7 +95,7 @@ def run_gibbs_parallele(seq_file, W, phi, num_restarts=10, iterations=500):
     """
     Lance l'échantillonneur de Gibbs plusieurs fois en parallèle.
     Retourne la solution avec le meilleur score de consensus.
-    
+
     Le multiprocessing permet de réduire le temps de calcul :
     chaque restart indépendant s'exécute sur un cœur différent du CPU.
     """
@@ -176,9 +177,6 @@ if __name__ == '__main__':
         "../sequences-purr/motifs-purr.txt"
     )
 
-    # Attention: phi_test ici est utilisé pour PurR, dans l'idéal il faudrait
-    # le recalculer empiriquement pour le fichier PurR,
-    # mais on garde votre logique.
     pos_trouvees_purr, theta_trouve_purr = run_gibbs_parallele(
         '../sequences-purr/sequences-purr.txt',
         W=W_purr,
